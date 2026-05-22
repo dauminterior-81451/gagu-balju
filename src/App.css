@@ -470,6 +470,34 @@
   stroke-width: 1;
 }
 
+.section-divider-line {
+  stroke: #4b5563;
+  stroke-width: 0.9;
+}
+
+.box-module-divider {
+  fill: #d7dde5;
+  stroke: #4b5563;
+  stroke-width: 0.8;
+}
+
+.box-module-divider-line {
+  stroke: #1f2933;
+  stroke-width: 0.8;
+}
+
+.drawer-front {
+  fill: rgba(255, 255, 255, 0.32);
+  stroke: #7a8796;
+  stroke-width: 0.7;
+}
+
+.drawer-center-line {
+  stroke: #9aa5b1;
+  stroke-dasharray: 3 3;
+  stroke-width: 0.7;
+}
+
 .hanger-rod {
   stroke: #394657;
   stroke-linecap: round;

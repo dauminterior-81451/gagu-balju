@@ -33,6 +33,7 @@ const calculateSectionSplits = (section: CabinetSection, innerW: number): Calcul
       label: `${index + 1}분할`,
       itemType: section.itemType,
       drawerCount: section.drawerCount,
+      drawerLabel: section.drawerLabel,
       shelfCount: section.shelfCount,
       widthRatio: 1,
     }))

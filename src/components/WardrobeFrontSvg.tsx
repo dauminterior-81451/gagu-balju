@@ -137,6 +137,27 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     return renderDimensionText('section-label', x + width / 2, labelY, label, 'sectionLabel')
   }
 
+  const renderSectionDivider = (
+    x: number,
+    y: number,
+    width: number,
+    isBoxModule: boolean,
+  ) => {
+    if (isBoxModule) {
+      const dividerH = Math.max(bodyT, 2)
+
+      return (
+        <g key={`box-divider-${y}`}>
+          <rect className="box-module-divider" x={x} y={y - dividerH / 2} width={width} height={dividerH} />
+          <line className="box-module-divider-line" x1={x} y1={y - dividerH / 2} x2={x + width} y2={y - dividerH / 2} />
+          <line className="box-module-divider-line" x1={x} y1={y + dividerH / 2} x2={x + width} y2={y + dividerH / 2} />
+        </g>
+      )
+    }
+
+    return <line className="section-divider-line" key={`normal-divider-${y}`} x1={x} y1={y} x2={x + width} y2={y} />
+  }
+
   const renderDrawerRows = (
     x: number,
     y: number,
@@ -144,6 +165,7 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     height: number,
     drawerCount = 3,
     drawerHeight: number,
+    drawerLabel = '뎀핑언더',
   ) => {
     const safeCount = Math.max(Math.floor(drawerCount), 1)
     const rowH = height / safeCount
@@ -154,9 +176,16 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
 
       return (
         <g key={`drawer-${rowY}`}>
+          <rect className="drawer-front" x={x} y={rowY} width={width} height={rowH} />
           {index < safeCount - 1 ? (
             <line className="section-detail-line" x1={x} y1={lineY} x2={x + width} y2={lineY} />
           ) : null}
+          {width > 58 && rowH > 35 ? (
+            <line className="drawer-center-line" x1={x + width / 2} y1={rowY + 5} x2={x + width / 2} y2={rowY + rowH - 5} />
+          ) : null}
+          {width > MIN_LABEL_W && canShowTextByHeight(rowH, 'detail')
+            ? renderDimensionText(`drawer-label-${rowY}`, x + width / 2, rowY + rowH / 2 - 5, drawerLabel, 'subDimension')
+            : null}
           {canShowTextByHeight(rowH, 'drawerDimension')
             ? renderDimensionText(`drawer-dim-${rowY}`, x + width - TEXT_PADDING_RIGHT, rowY + rowH / 2 + 3, `${drawerHeight}H`, 'dimension', 'end')
             : null}
@@ -184,12 +213,13 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     drawerCount?: number,
     shelfCount?: number,
     calculatedH?: number,
+    drawerLabel?: string,
   ) => {
     if (itemType === 'drawer') {
       const safeCount = Math.max(Math.floor(drawerCount ?? 3), 1)
       const drawerHeight = Math.round((calculatedH ?? 0) / safeCount)
 
-      return renderDrawerRows(x, y, width, height, safeCount, drawerHeight)
+      return renderDrawerRows(x, y, width, height, safeCount, drawerHeight, drawerLabel)
     }
 
     if (itemType === 'shelf') {
@@ -245,6 +275,7 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
                 return (
                   <g key={section.id}>
                     <rect className="cabinet-section" x={innerX} y={sectionY} width={innerW} height={sectionH} />
+                    {sectionIndex > 0 ? renderSectionDivider(innerX, sectionY, innerW, section.structureType === 'box') : null}
                     {section.splits?.length ? (
                       (() => {
                         let splitX = innerX
@@ -261,7 +292,7 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
                               {splitIndex > 0 ? (
                                 <line className="section-split-line" x1={currentSplitX} y1={sectionY} x2={currentSplitX} y2={sectionY + sectionH} />
                               ) : null}
-                              {renderSectionItem(split.itemType, currentSplitX, sectionY, splitW, sectionH, split.drawerCount, split.shelfCount, section.calculatedH)}
+                              {renderSectionItem(split.itemType, currentSplitX, sectionY, splitW, sectionH, split.drawerCount, split.shelfCount, section.calculatedH, split.drawerLabel ?? section.drawerLabel ?? '뎀핑언더')}
                               {splitW > MIN_LABEL_W && canShowTextByHeight(sectionH, 'detail') ? (
                                 <>
                                   {renderDimensionText(`split-label-${split.id}`, currentSplitX + splitW / 2, sectionY + TEXT_PADDING_TOP + 8, split.label || getSectionText(split.itemType), 'subDimension')}
@@ -275,7 +306,7 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
                       })()
                     ) : (
                       <>
-                        {renderSectionItem(section.itemType, innerX, sectionY, innerW, sectionH, section.drawerCount, section.shelfCount, section.calculatedH)}
+                        {renderSectionItem(section.itemType, innerX, sectionY, innerW, sectionH, section.drawerCount, section.shelfCount, section.calculatedH, section.drawerLabel ?? '뎀핑언더')}
                         {innerW > MIN_LABEL_W && canShowTextByHeight(sectionH, 'detail')
                           ? renderDimensionText(`section-type-${section.id}`, innerX + innerW / 2, sectionY + sectionH / 2 + 4, getSectionText(section.itemType), 'subDimension')
                           : null}

@@ -11,6 +11,7 @@ export type WardrobeInput = {
 }
 
 export type SectionItemType = 'open' | 'shelf' | 'longHanger' | 'shortHanger' | 'drawer'
+export type SectionStructureType = 'normal' | 'box'
 
 export type SectionSplit = {
   id: string
@@ -18,6 +19,7 @@ export type SectionSplit = {
   itemType: SectionItemType
   widthRatio?: number
   drawerCount?: number
+  drawerLabel?: string
   shelfCount?: number
 }
 
@@ -26,8 +28,10 @@ export type CabinetSection = {
   label: string
   itemType: SectionItemType
   height?: number
+  structureType?: SectionStructureType
   verticalSplitCount?: number
   drawerCount?: number
+  drawerLabel?: string
   shelfCount?: number
   splits?: SectionSplit[]
 }

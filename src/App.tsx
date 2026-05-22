@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import WardrobeFrontSvg from './components/WardrobeFrontSvg'
 import { calculateWardrobeLayout, clampNumber } from './utils/calculateLayout'
-import type { BaySectionMap, CabinetSection, SectionItemType, SectionSplit, WardrobeInput } from './types/furniture'
+import type { BaySectionMap, CabinetSection, SectionItemType, SectionSplit, SectionStructureType, WardrobeInput } from './types/furniture'
 import './App.css'
 
 const initialInput: WardrobeInput = {
@@ -97,6 +97,11 @@ const sectionItemOptions: { value: SectionItemType; label: string }[] = [
   { value: 'drawer', label: '서랍' },
 ]
 
+const sectionStructureOptions: { value: SectionStructureType; label: string }[] = [
+  { value: 'normal', label: '일반' },
+  { value: 'box', label: '통형' },
+]
+
 const createVerticalSplits = (section: CabinetSection, splitCount: number): SectionSplit[] => (
   Array.from({ length: splitCount }, (_, index) => {
     const currentSplit = section.splits?.[index]
@@ -107,6 +112,7 @@ const createVerticalSplits = (section: CabinetSection, splitCount: number): Sect
       itemType: currentSplit?.itemType ?? section.itemType,
       widthRatio: currentSplit?.widthRatio ?? 1,
       drawerCount: currentSplit?.drawerCount ?? section.drawerCount,
+      drawerLabel: currentSplit?.drawerLabel ?? section.drawerLabel ?? '뎀핑언더',
       shelfCount: currentSplit?.shelfCount ?? section.shelfCount,
     }
   })
@@ -131,14 +137,14 @@ const createPresetSections = (presetKey: StructurePresetKey): CabinetSection[] =
   if (presetKey === 'longDrawer') {
     return [
       { id: 'long-hanger', label: '긴옷', itemType: 'longHanger' },
-      { id: 'drawer', label: '하단 서랍', itemType: 'drawer', drawerCount: 3 },
+      { id: 'drawer', label: '하단 서랍', itemType: 'drawer', drawerCount: 3, drawerLabel: '뎀핑언더' },
     ]
   }
 
   if (presetKey === 'shortDrawer') {
     return [
       { id: 'short-hanger', label: '짧은옷', itemType: 'shortHanger' },
-      { id: 'drawer', label: '하단 서랍', itemType: 'drawer', drawerCount: 4 },
+      { id: 'drawer', label: '하단 서랍', itemType: 'drawer', drawerCount: 4, drawerLabel: '뎀핑언더' },
     ]
   }
 
@@ -158,7 +164,7 @@ const createPresetSections = (presetKey: StructurePresetKey): CabinetSection[] =
         verticalSplitCount: 2,
         splits: [
           { id: 'left', label: '좌측', itemType: 'shelf', widthRatio: 1, shelfCount: 3 },
-          { id: 'right', label: '우측', itemType: 'drawer', widthRatio: 1, drawerCount: 3 },
+          { id: 'right', label: '우측', itemType: 'drawer', widthRatio: 1, drawerCount: 3, drawerLabel: '뎀핑언더' },
         ],
       },
     ]
@@ -444,6 +450,19 @@ export default function App() {
                       </label>
 
                       <label className="field">
+                        <span>분할 방식</span>
+                        <select
+                          className="select-input"
+                          value={section.structureType ?? 'normal'}
+                          onChange={(event) => updateSectionValue(sectionIndex, 'structureType', event.target.value)}
+                        >
+                          {sectionStructureOptions.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="field">
                         <span>높이</span>
                         <div className="number-input">
                           <input
@@ -471,17 +490,28 @@ export default function App() {
                       </label>
 
                       {section.itemType === 'drawer' ? (
-                        <label className="field">
-                          <span>서랍 개수</span>
-                          <input
-                            className="text-input"
-                            type="number"
-                            min={1}
-                            max={8}
-                            value={section.drawerCount ?? 3}
-                            onChange={(event) => updateSectionValue(sectionIndex, 'drawerCount', event.target.value)}
-                          />
-                        </label>
+                        <>
+                          <label className="field">
+                            <span>서랍 개수</span>
+                            <input
+                              className="text-input"
+                              type="number"
+                              min={1}
+                              max={8}
+                              value={section.drawerCount ?? 3}
+                              onChange={(event) => updateSectionValue(sectionIndex, 'drawerCount', event.target.value)}
+                            />
+                          </label>
+
+                          <label className="field">
+                            <span>서랍 메모</span>
+                            <input
+                              className="text-input"
+                              value={section.drawerLabel ?? '뎀핑언더'}
+                              onChange={(event) => updateSectionValue(sectionIndex, 'drawerLabel', event.target.value)}
+                            />
+                          </label>
+                        </>
                       ) : null}
 
                       {section.itemType === 'shelf' ? (
@@ -525,17 +555,28 @@ export default function App() {
                               </label>
 
                               {split.itemType === 'drawer' ? (
-                                <label className="field">
-                                  <span>분할 서랍 개수</span>
-                                  <input
-                                    className="text-input"
-                                    type="number"
-                                    min={1}
-                                    max={8}
-                                    value={split.drawerCount ?? 3}
-                                    onChange={(event) => updateSectionSplitValue(sectionIndex, splitIndex, 'drawerCount', event.target.value)}
-                                  />
-                                </label>
+                                <>
+                                  <label className="field">
+                                    <span>분할 서랍 개수</span>
+                                    <input
+                                      className="text-input"
+                                      type="number"
+                                      min={1}
+                                      max={8}
+                                      value={split.drawerCount ?? 3}
+                                      onChange={(event) => updateSectionSplitValue(sectionIndex, splitIndex, 'drawerCount', event.target.value)}
+                                    />
+                                  </label>
+
+                                  <label className="field">
+                                    <span>분할 서랍 메모</span>
+                                    <input
+                                      className="text-input"
+                                      value={split.drawerLabel ?? '뎀핑언더'}
+                                      onChange={(event) => updateSectionSplitValue(sectionIndex, splitIndex, 'drawerLabel', event.target.value)}
+                                    />
+                                  </label>
+                                </>
                               ) : null}
                             </div>
                           ))}
