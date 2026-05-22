@@ -144,16 +144,13 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     isBoxModule: boolean,
   ) => {
     if (isBoxModule) {
-      const plateH = Math.max(bodyT, 2)
+      const dividerGap = Math.min(8, Math.max(4, bodyT * 0.4))
 
       return (
         <g key={`box-divider-${y}`}>
-          <rect className="box-module-plate upper" x={x} y={y - plateH} width={width} height={plateH} />
-          <rect className="box-module-plate lower" x={x} y={y} width={width} height={plateH} />
-          <line className="box-module-plate-line" x1={x} y1={y - plateH} x2={x + width} y2={y - plateH} />
-          <line className="box-module-plate-line" x1={x} y1={y} x2={x + width} y2={y} />
-          <line className="box-module-plate-line" x1={x} y1={y + 1.5} x2={x + width} y2={y + 1.5} />
-          <line className="box-module-plate-line" x1={x} y1={y + plateH} x2={x + width} y2={y + plateH} />
+          <line className="box-module-thin-line" x1={x} y1={y - dividerGap} x2={x + width} y2={y - dividerGap} />
+          <line className="box-module-thin-line" x1={x} y1={y} x2={x + width} y2={y} />
+          <line className="box-module-thin-line" x1={x} y1={y + dividerGap} x2={x + width} y2={y + dividerGap} />
         </g>
       )
     }

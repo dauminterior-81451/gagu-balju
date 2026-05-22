@@ -475,6 +475,11 @@
   stroke-width: 0.9;
 }
 
+.box-module-thin-line {
+  stroke: #4b5563;
+  stroke-width: 0.9;
+}
+
 .box-module-divider {
   fill: #d7dde5;
   stroke: #4b5563;
