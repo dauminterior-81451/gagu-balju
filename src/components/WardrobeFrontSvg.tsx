@@ -144,13 +144,15 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     isBoxModule: boolean,
   ) => {
     if (isBoxModule) {
-      const dividerH = Math.max(bodyT, 2)
+      const plateH = Math.max(bodyT, 2)
 
       return (
         <g key={`box-divider-${y}`}>
-          <rect className="box-module-divider" x={x} y={y - dividerH / 2} width={width} height={dividerH} />
-          <line className="box-module-divider-line" x1={x} y1={y - dividerH / 2} x2={x + width} y2={y - dividerH / 2} />
-          <line className="box-module-divider-line" x1={x} y1={y + dividerH / 2} x2={x + width} y2={y + dividerH / 2} />
+          <rect className="box-module-divider upper" x={x} y={y - plateH} width={width} height={plateH} />
+          <rect className="box-module-divider lower" x={x} y={y} width={width} height={plateH} />
+          <line className="box-module-divider-line" x1={x} y1={y - plateH} x2={x + width} y2={y - plateH} />
+          <line className="box-module-joint-line" x1={x} y1={y} x2={x + width} y2={y} />
+          <line className="box-module-divider-line" x1={x} y1={y + plateH} x2={x + width} y2={y + plateH} />
         </g>
       )
     }
@@ -180,8 +182,8 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
           {index < safeCount - 1 ? (
             <line className="section-detail-line" x1={x} y1={lineY} x2={x + width} y2={lineY} />
           ) : null}
-          {width > 58 && rowH > 35 ? (
-            <line className="drawer-center-line" x1={x + width / 2} y1={rowY + 5} x2={x + width / 2} y2={rowY + rowH - 5} />
+          {width > 34 && rowH > 18 ? (
+            <line className="drawer-diagonal-line" x1={x + 6} y1={rowY + rowH - 6} x2={x + width - 6} y2={rowY + 6} />
           ) : null}
           {width > MIN_LABEL_W && canShowTextByHeight(rowH, 'detail')
             ? renderDimensionText(`drawer-label-${rowY}`, x + width / 2, rowY + rowH / 2 - 5, drawerLabel, 'subDimension')

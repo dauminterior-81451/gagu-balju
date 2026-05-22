@@ -481,9 +481,19 @@
   stroke-width: 0.8;
 }
 
+.box-module-divider.lower {
+  fill: #cfd6df;
+}
+
 .box-module-divider-line {
   stroke: #1f2933;
   stroke-width: 0.8;
+}
+
+.box-module-joint-line {
+  stroke: #1f2933;
+  stroke-dasharray: 4 3;
+  stroke-width: 0.9;
 }
 
 .drawer-front {
@@ -492,9 +502,8 @@
   stroke-width: 0.7;
 }
 
-.drawer-center-line {
+.drawer-diagonal-line {
   stroke: #9aa5b1;
-  stroke-dasharray: 3 3;
   stroke-width: 0.7;
 }
 
