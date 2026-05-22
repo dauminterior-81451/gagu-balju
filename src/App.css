@@ -1,9 +1,10 @@
 .app-shell {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  min-height: 100vh;
+  grid-template-columns: 170px minmax(0, 1fr);
+  height: 100vh;
   background: #edf0f3;
   color: #1f2933;
+  overflow: hidden;
 }
 
 .category-sidebar {
@@ -20,12 +21,15 @@
 }
 
 .sidebar-header p,
-.input-panel {
+.input-panel,
+.structure-panel {
   min-width: 0;
+  min-height: 0;
+  max-height: calc(100vh - 126px);
   border: 1px solid #cfd6dd;
   border-radius: 8px;
   background: #ffffff;
-  padding: 22px;
+  padding: 18px;
   overflow: auto;
 }
 
@@ -209,9 +213,6 @@
 .section-editor {
   display: grid;
   gap: 12px;
-  margin-top: 20px;
-  border-top: 1px solid #d9e0e7;
-  padding-top: 20px;
 }
 
 .section-editor-header {
@@ -299,27 +300,37 @@
 }
 
 .work-area {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
-  padding: 24px;
+  height: 100vh;
+  overflow: hidden;
+  padding: 18px;
 }
 
 .work-header {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .wardrobe-workspace {
   display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
+  grid-template-columns: minmax(250px, 300px) minmax(300px, 360px) minmax(520px, 1fr);
+  gap: 14px;
+  min-height: 0;
+  align-items: stretch;
 }
 
 .preview-area {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
+  max-height: calc(100vh - 36px);
   border: 1px solid #cfd6dd;
   border-radius: 8px;
   background: #ffffff;
-  padding: 22px;
+  padding: 18px;
 }
 
 .preview-header {
@@ -392,7 +403,7 @@
   border: 1px solid #cfd6dd;
   border-radius: 8px;
   background: #ffffff;
-  padding: 18px;
+  padding: 12px;
 }
 
 .front-svg {

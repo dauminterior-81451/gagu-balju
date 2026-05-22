@@ -131,14 +131,14 @@ const createPresetSections = (presetKey: StructurePresetKey): CabinetSection[] =
   if (presetKey === 'longDrawer') {
     return [
       { id: 'long-hanger', label: '긴옷', itemType: 'longHanger' },
-      { id: 'drawer', label: '하단 서랍', itemType: 'drawer', height: 650, drawerCount: 3 },
+      { id: 'drawer', label: '하단 서랍', itemType: 'drawer', drawerCount: 3 },
     ]
   }
 
   if (presetKey === 'shortDrawer') {
     return [
       { id: 'short-hanger', label: '짧은옷', itemType: 'shortHanger' },
-      { id: 'drawer', label: '하단 서랍', itemType: 'drawer', height: 760, drawerCount: 4 },
+      { id: 'drawer', label: '하단 서랍', itemType: 'drawer', drawerCount: 4 },
     ]
   }
 
@@ -155,7 +155,6 @@ const createPresetSections = (presetKey: StructurePresetKey): CabinetSection[] =
         id: 'bottom-split',
         label: '하단 좌우분할',
         itemType: 'open',
-        height: 760,
         verticalSplitCount: 2,
         splits: [
           { id: 'left', label: '좌측', itemType: 'shelf', widthRatio: 1, shelfCount: 3 },
@@ -382,7 +381,9 @@ export default function App() {
                   <p className="error-message">{selectedBay.heightError}</p>
                 ) : null}
               </section>
+            </aside>
 
+            <aside className="structure-panel" aria-label="통별 내부 구조 편집 패널">
               <section className="section-editor" aria-label="통별 내부 구조 편집">
                 <div className="panel-header section-editor-header">
                   <p>통별 구조</p>
