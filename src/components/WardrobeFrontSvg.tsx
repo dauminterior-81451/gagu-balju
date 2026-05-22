@@ -148,11 +148,12 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
 
       return (
         <g key={`box-divider-${y}`}>
-          <rect className="box-module-divider upper" x={x} y={y - plateH} width={width} height={plateH} />
-          <rect className="box-module-divider lower" x={x} y={y} width={width} height={plateH} />
-          <line className="box-module-divider-line" x1={x} y1={y - plateH} x2={x + width} y2={y - plateH} />
-          <line className="box-module-joint-line" x1={x} y1={y} x2={x + width} y2={y} />
-          <line className="box-module-divider-line" x1={x} y1={y + plateH} x2={x + width} y2={y + plateH} />
+          <rect className="box-module-plate upper" x={x} y={y - plateH} width={width} height={plateH} />
+          <rect className="box-module-plate lower" x={x} y={y} width={width} height={plateH} />
+          <line className="box-module-plate-line" x1={x} y1={y - plateH} x2={x + width} y2={y - plateH} />
+          <line className="box-module-plate-line" x1={x} y1={y} x2={x + width} y2={y} />
+          <line className="box-module-plate-line" x1={x} y1={y + 1.5} x2={x + width} y2={y + 1.5} />
+          <line className="box-module-plate-line" x1={x} y1={y + plateH} x2={x + width} y2={y + plateH} />
         </g>
       )
     }
