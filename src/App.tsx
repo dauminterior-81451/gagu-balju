@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import WardrobeFrontSvg from './components/WardrobeFrontSvg'
 import { calculateWardrobeLayout, clampNumber } from './utils/calculateLayout'
-import type { BaySectionMap, CabinetSection, SectionItemType, WardrobeInput } from './types/furniture'
+import type { BaySectionMap, CabinetSection, SectionItemType, SectionSplit, WardrobeInput } from './types/furniture'
 import './App.css'
 
 const initialInput: WardrobeInput = {
@@ -97,6 +97,21 @@ const sectionItemOptions: { value: SectionItemType; label: string }[] = [
   { value: 'drawer', label: '서랍' },
 ]
 
+const createVerticalSplits = (section: CabinetSection, splitCount: number): SectionSplit[] => (
+  Array.from({ length: splitCount }, (_, index) => {
+    const currentSplit = section.splits?.[index]
+
+    return {
+      id: currentSplit?.id ?? `${section.id}-vertical-${index + 1}`,
+      label: currentSplit?.label ?? `${index + 1}분할`,
+      itemType: currentSplit?.itemType ?? section.itemType,
+      widthRatio: currentSplit?.widthRatio ?? 1,
+      drawerCount: currentSplit?.drawerCount ?? section.drawerCount,
+      shelfCount: currentSplit?.shelfCount ?? section.shelfCount,
+    }
+  })
+)
+
 const createPresetSections = (presetKey: StructurePresetKey): CabinetSection[] => {
   if (presetKey === 'twoSplit') {
     return [
@@ -141,6 +156,7 @@ const createPresetSections = (presetKey: StructurePresetKey): CabinetSection[] =
         label: '하단 좌우분할',
         itemType: 'open',
         height: 760,
+        verticalSplitCount: 2,
         splits: [
           { id: 'left', label: '좌측', itemType: 'shelf', widthRatio: 1, shelfCount: 3 },
           { id: 'right', label: '우측', itemType: 'drawer', widthRatio: 1, drawerCount: 3 },
@@ -228,9 +244,65 @@ export default function App() {
       return
     }
 
+    if (key === 'verticalSplitCount') {
+      const splitCount = Math.floor(clampNumber(Number(value), 1, 8))
+
+      updateSection(sectionIndex, {
+        ...currentSection,
+        verticalSplitCount: splitCount,
+        splits: splitCount > 1 ? createVerticalSplits(currentSection, splitCount) : undefined,
+      })
+      return
+    }
+
     updateSection(sectionIndex, {
       ...currentSection,
       [key]: value,
+    })
+  }
+
+  const updateSectionSplitValue = (
+    sectionIndex: number,
+    splitIndex: number,
+    key: keyof SectionSplit,
+    value: string,
+  ) => {
+    const currentSection = selectedSections[sectionIndex]
+    if (!currentSection) {
+      return
+    }
+
+    const splitCount = Math.floor(clampNumber(currentSection.verticalSplitCount ?? currentSection.splits?.length ?? 1, 1, 8))
+    const currentSplits = createVerticalSplits(currentSection, splitCount)
+    const nextSplits = currentSplits.map((split, index) => {
+      if (index !== splitIndex) {
+        return split
+      }
+
+      if (key === 'drawerCount' || key === 'shelfCount') {
+        return {
+          ...split,
+          [key]: Math.floor(clampNumber(Number(value), 1, 8)),
+        }
+      }
+
+      if (key === 'widthRatio') {
+        return {
+          ...split,
+          widthRatio: clampNumber(Number(value), 0.1, 10),
+        }
+      }
+
+      return {
+        ...split,
+        [key]: value,
+      }
+    })
+
+    updateSection(sectionIndex, {
+      ...currentSection,
+      verticalSplitCount: splitCount,
+      splits: nextSplits,
     })
   }
 
@@ -382,6 +454,18 @@ export default function App() {
                         </div>
                       </label>
 
+                      <label className="field">
+                        <span>세로분할 개수</span>
+                        <input
+                          className="text-input"
+                          type="number"
+                          min={1}
+                          max={8}
+                          value={section.verticalSplitCount ?? section.splits?.length ?? 1}
+                          onChange={(event) => updateSectionValue(sectionIndex, 'verticalSplitCount', event.target.value)}
+                        />
+                      </label>
+
                       {section.itemType === 'drawer' ? (
                         <label className="field">
                           <span>서랍 개수</span>
@@ -412,9 +496,43 @@ export default function App() {
 
                       {section.splits?.length ? (
                         <div className="split-list">
-                          {section.splits.map((split) => (
-                            <div className="split-chip" key={split.id}>
-                              {split.label} · {sectionItemOptions.find((option) => option.value === split.itemType)?.label}
+                          {section.splits.map((split, splitIndex) => (
+                            <div className="split-card" key={split.id}>
+                              <label className="field">
+                                <span>분할 텍스트</span>
+                                <input
+                                  className="text-input"
+                                  value={split.label}
+                                  onChange={(event) => updateSectionSplitValue(sectionIndex, splitIndex, 'label', event.target.value)}
+                                />
+                              </label>
+
+                              <label className="field">
+                                <span>분할 타입</span>
+                                <select
+                                  className="select-input"
+                                  value={split.itemType}
+                                  onChange={(event) => updateSectionSplitValue(sectionIndex, splitIndex, 'itemType', event.target.value)}
+                                >
+                                  {sectionItemOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                  ))}
+                                </select>
+                              </label>
+
+                              {split.itemType === 'drawer' ? (
+                                <label className="field">
+                                  <span>분할 서랍 개수</span>
+                                  <input
+                                    className="text-input"
+                                    type="number"
+                                    min={1}
+                                    max={8}
+                                    value={split.drawerCount ?? 3}
+                                    onChange={(event) => updateSectionSplitValue(sectionIndex, splitIndex, 'drawerCount', event.target.value)}
+                                  />
+                                </label>
+                              ) : null}
                             </div>
                           ))}
                         </div>

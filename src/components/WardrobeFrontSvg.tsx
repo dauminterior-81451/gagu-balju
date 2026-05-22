@@ -34,14 +34,6 @@ const getSectionText = (itemType: string) => {
 }
 
 const getSectionName = (section: CalculatedCabinetSection, sectionIndex: number, sectionCount: number) => {
-  if (section.itemType === 'longHanger' || section.itemType === 'shortHanger' || section.itemType === 'drawer') {
-    return getSectionText(section.itemType)
-  }
-
-  if (section.label && !['상단', '중단', '하단'].includes(section.label)) {
-    return section.label
-  }
-
   if (sectionCount === 1) {
     return section.label || getSectionText(section.itemType)
   }
@@ -79,7 +71,6 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     height: number,
     drawerCount = 3,
     drawerHeight: number,
-    drawerWidth: number,
   ) => {
     const safeCount = Math.max(Math.floor(drawerCount), 1)
     const rowH = height / safeCount
@@ -95,7 +86,7 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
           ) : null}
           {rowH > MIN_DIM_H ? (
             <text className="drawer-dim" x={x + width / 2} y={rowY + rowH / 2}>
-              H {drawerHeight} / W {drawerWidth}
+              {drawerHeight}H
             </text>
           ) : null}
         </g>
@@ -122,14 +113,12 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     drawerCount?: number,
     shelfCount?: number,
     calculatedH?: number,
-    calculatedW?: number,
   ) => {
     if (itemType === 'drawer') {
       const safeCount = Math.max(Math.floor(drawerCount ?? 3), 1)
       const drawerHeight = Math.round((calculatedH ?? 0) / safeCount)
-      const drawerWidth = Math.round(calculatedW ?? 0)
 
-      return renderDrawerRows(x, y, width, height, safeCount, drawerHeight, drawerWidth)
+      return renderDrawerRows(x, y, width, height, safeCount, drawerHeight)
     }
 
     if (itemType === 'shelf') {
@@ -201,25 +190,40 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
                               {splitIndex > 0 ? (
                                 <line className="section-split-line" x1={currentSplitX} y1={sectionY} x2={currentSplitX} y2={sectionY + sectionH} />
                               ) : null}
-                              {renderSectionItem(split.itemType, currentSplitX, sectionY, splitW, sectionH, split.drawerCount, split.shelfCount, section.calculatedH, split.calculatedW)}
+                              {renderSectionItem(split.itemType, currentSplitX, sectionY, splitW, sectionH, split.drawerCount, split.shelfCount, section.calculatedH)}
                               {splitW > MIN_LABEL_W ? (
-                                <text className="section-label" x={currentSplitX + splitW / 2} y={sectionY + sectionH / 2}>
-                                  {split.label || getSectionText(split.itemType)}
-                                </text>
+                                <>
+                                  <text className="split-type-label" x={currentSplitX + splitW / 2} y={sectionY + 24}>
+                                    {split.label || getSectionText(split.itemType)}
+                                  </text>
+                                  <text className="split-type-label" x={currentSplitX + splitW / 2} y={sectionY + Math.min(sectionH / 2, sectionH - 18)}>
+                                    {getSectionText(split.itemType)}
+                                  </text>
+                                  <text className="split-width-dim" x={currentSplitX + splitW / 2} y={sectionY + sectionH - 8}>
+                                    {split.calculatedW}W
+                                  </text>
+                                </>
                               ) : null}
                             </g>
                           )
                         })
                       })()
                     ) : (
-                      renderSectionItem(section.itemType, innerX, sectionY, innerW, sectionH, section.drawerCount, section.shelfCount, section.calculatedH, bay.outerW)
+                      <>
+                        {renderSectionItem(section.itemType, innerX, sectionY, innerW, sectionH, section.drawerCount, section.shelfCount, section.calculatedH)}
+                        {innerW > MIN_LABEL_W ? (
+                          <text className="split-type-label" x={innerX + innerW / 2} y={sectionY + Math.min(sectionH / 2, sectionH - 18)}>
+                            {getSectionText(section.itemType)}
+                          </text>
+                        ) : null}
+                      </>
                     )}
-                    <text className="section-label" x={innerX + innerW / 2} y={sectionY + Math.min(sectionH / 2, sectionH - 8)}>
+                    <text className="section-label" x={innerX + innerW / 2} y={sectionY + 12}>
                       {getSectionName(section, sectionIndex, bay.sections.length)}
                     </text>
                     {sectionH > MIN_DIM_H ? (
                       <text className="section-dim" x={innerX + innerW - 8} y={sectionY + sectionH - 8}>
-                        H {section.calculatedH}
+                        {section.calculatedH}H
                       </text>
                     ) : null}
                   </g>

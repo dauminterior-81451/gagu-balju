@@ -26,6 +26,7 @@ export type CabinetSection = {
   label: string
   itemType: SectionItemType
   height?: number
+  verticalSplitCount?: number
   drawerCount?: number
   shelfCount?: number
   splits?: SectionSplit[]

@@ -25,16 +25,36 @@ const createDefaultSections = (): CabinetSection[] => [
 ]
 
 const calculateSectionSplits = (section: CabinetSection, innerW: number): CalculatedSectionSplit[] | undefined => {
-  if (!section.splits?.length) {
+  const splitCount = Math.floor(clampNumber(section.verticalSplitCount ?? section.splits?.length ?? 1, 1, 8))
+  const sourceSplits = section.splits?.length
+    ? section.splits.slice(0, splitCount)
+    : Array.from({ length: splitCount }, (_, index) => ({
+      id: `${section.id}-vertical-${index + 1}`,
+      label: `${index + 1}분할`,
+      itemType: section.itemType,
+      drawerCount: section.drawerCount,
+      shelfCount: section.shelfCount,
+      widthRatio: 1,
+    }))
+
+  if (sourceSplits.length <= 1) {
     return undefined
   }
 
-  const totalRatio = section.splits.reduce((sum, split) => sum + Math.max(split.widthRatio ?? 1, 0.1), 0)
+  const totalRatio = sourceSplits.reduce((sum, split) => sum + Math.max(split.widthRatio ?? 1, 0.1), 0)
+  let usedW = 0
 
-  return section.splits.map((split) => ({
-    ...split,
-    calculatedW: Math.round(innerW * (Math.max(split.widthRatio ?? 1, 0.1) / totalRatio)),
-  }))
+  return sourceSplits.map((split, index) => {
+    const calculatedW = index === sourceSplits.length - 1
+      ? Math.max(innerW - usedW, 0)
+      : Math.round(innerW * (Math.max(split.widthRatio ?? 1, 0.1) / totalRatio))
+    usedW += calculatedW
+
+    return {
+      ...split,
+      calculatedW,
+    }
+  })
 }
 
 const calculateSections = (sections: CabinetSection[], innerH: number, innerW: number): CalculatedCabinetSection[] => {
