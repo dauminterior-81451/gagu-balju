@@ -378,6 +378,9 @@ export default function App() {
                   <span>통 외경</span>
                   <strong>{layout.bays.map((bay) => bay.outerW).join(' / ')} mm</strong>
                 </div>
+                {selectedBay?.heightError ? (
+                  <p className="error-message">{selectedBay.heightError}</p>
+                ) : null}
               </section>
 
               <section className="section-editor" aria-label="통별 내부 구조 편집">

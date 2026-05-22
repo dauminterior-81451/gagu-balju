@@ -194,6 +194,18 @@
   font-size: 15px;
 }
 
+.error-message {
+  margin: 0;
+  border: 1px solid #d92d20;
+  border-radius: 6px;
+  background: #fff4f2;
+  color: #b42318;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+  padding: 8px 10px;
+}
+
 .section-editor {
   display: grid;
   gap: 12px;
@@ -501,6 +513,12 @@
   font-size: 10px;
   text-anchor: middle;
   dominant-baseline: middle;
+}
+
+.svg-error-label {
+  fill: #b42318;
+  font-size: 11px;
+  text-anchor: middle;
 }
 
 .dim-label {

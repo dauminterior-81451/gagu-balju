@@ -46,6 +46,7 @@ export type CabinetBay = {
   outerW: number
   innerW: number
   innerH: number
+  heightError?: string
   sections: CalculatedCabinetSection[]
 }
 

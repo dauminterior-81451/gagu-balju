@@ -240,6 +240,11 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
               내부W {bay.innerW} mm
             </text>
             <line className="bay-dim" x1={bayX + 8} y1={originY + caseH + toeH + 14} x2={bayX + bayW - 8} y2={originY + caseH + toeH + 14} />
+            {bay.heightError ? (
+              <text className="svg-error-label" x={bayX + bayW / 2} y={originY + caseH - 12}>
+                높이 초과
+              </text>
+            ) : null}
           </g>
         )
       })}

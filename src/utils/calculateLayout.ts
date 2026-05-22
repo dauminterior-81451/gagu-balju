@@ -1,8 +1,8 @@
 import type {
   BaySectionMap,
   CabinetSection,
-  CalculatedCabinetSection,
   CalculatedSectionSplit,
+  CabinetBay,
   WardrobeBay,
   WardrobeInput,
   WardrobeLayout,
@@ -57,19 +57,30 @@ const calculateSectionSplits = (section: CabinetSection, innerW: number): Calcul
   })
 }
 
-const calculateSections = (sections: CabinetSection[], innerH: number, innerW: number): CalculatedCabinetSection[] => {
+const calculateSections = (
+  sections: CabinetSection[],
+  innerH: number,
+  innerW: number,
+): Pick<CabinetBay, 'heightError' | 'sections'> => {
   const safeSections = sections.length > 0 ? sections : createDefaultSections()
-  const autoSections = safeSections.filter((section) => section.height === undefined || section.height <= 0)
-  let remainingH = innerH
+  const fixedTotalH = safeSections.reduce((sum, section) => sum + Math.max(section.height ?? 0, 0), 0)
+  const autoSectionCount = safeSections.filter((section) => section.height === undefined || section.height <= 0).length
+  const remainingH = innerH - fixedTotalH
+  const autoBaseH = autoSectionCount > 0 && remainingH > 0 ? Math.floor(remainingH / autoSectionCount) : 0
+  const autoRemainderH = autoSectionCount > 0 && remainingH > 0 ? remainingH - autoBaseH * autoSectionCount : 0
+  let autoIndex = 0
 
-  const fixedSections = safeSections.map((section) => {
-    if (section.height === undefined || section.height <= 0) {
-      return section
+  const calculatedSections = safeSections.map((section) => {
+    const isAutoHeight = section.height === undefined || section.height <= 0
+    const calculatedH = isAutoHeight
+      ? autoBaseH + (autoIndex === autoSectionCount - 1 ? autoRemainderH : 0)
+      : Math.max(section.height ?? 0, 0)
+
+    if (isAutoHeight) {
+      autoIndex += 1
     }
 
-    const calculatedH = clampNumber(section.height, 0, remainingH)
-    remainingH = Math.max(remainingH - calculatedH, 0)
-
+    // 고정 높이 합계가 내부 사용 H를 초과하면 오류를 표시하고 SVG 높이는 0 이하로 내려가지 않게 유지한다.
     return {
       ...section,
       calculatedH,
@@ -77,23 +88,12 @@ const calculateSections = (sections: CabinetSection[], innerH: number, innerW: n
     }
   })
 
-  const autoH = autoSections.length > 0 ? Math.floor(remainingH / autoSections.length) : 0
-  let autoRemainder = autoSections.length > 0 ? remainingH - autoH * autoSections.length : 0
-
-  return fixedSections.map((section) => {
-    if ('calculatedH' in section) {
-      return section
-    }
-
-    const extra = autoRemainder > 0 ? 1 : 0
-    autoRemainder -= extra
-
-    return {
-      ...section,
-      calculatedH: autoH + extra,
-      splits: calculateSectionSplits(section, innerW),
-    }
-  })
+  return {
+    heightError: fixedTotalH > innerH
+      ? `고정 구간 높이 합계 ${fixedTotalH}mm가 내부 사용 H ${innerH}mm를 초과합니다.`
+      : undefined,
+    sections: calculatedSections,
+  }
 }
 
 const distributeWidths = (
@@ -113,12 +113,15 @@ const distributeWidths = (
     const outerW = base + extra
     const innerW = Math.max(outerW - bodyThickness * 2, 0)
 
+    const calculatedSections = calculateSections(baySections[id] ?? createDefaultSections(), innerH, innerW)
+
     return {
       id,
       outerW,
       innerW,
       innerH,
-      sections: calculateSections(baySections[id] ?? createDefaultSections(), innerH, innerW),
+      heightError: calculatedSections.heightError,
+      sections: calculatedSections.sections,
     }
   })
 }
