@@ -11,7 +11,12 @@ const MARGIN_X = 92
 const MARGIN_TOP = 76
 const MARGIN_BOTTOM = 132
 const MIN_LABEL_W = 48
-const MIN_DIM_H = 28
+const TEXT_PADDING_TOP = 14
+const TEXT_PADDING_RIGHT = 8
+const TEXT_PADDING_BOTTOM = 8
+const BAY_NUMBER_Y_OFFSET = 24
+
+type SvgTextRole = 'bayNumber' | 'sectionLabel' | 'dimension' | 'subDimension'
 
 const getSectionText = (itemType: string) => {
   if (itemType === 'longHanger') {
@@ -49,6 +54,42 @@ const getSectionName = (section: CalculatedCabinetSection, sectionIndex: number,
   return '중부'
 }
 
+const getTextSizeByRole = (role: SvgTextRole) => {
+  if (role === 'bayNumber') {
+    return 'svg-text-bay-number'
+  }
+
+  if (role === 'sectionLabel') {
+    return 'svg-text-section-label'
+  }
+
+  if (role === 'dimension') {
+    return 'svg-text-dimension'
+  }
+
+  return 'svg-text-sub-dimension'
+}
+
+const canShowTextByHeight = (height: number, role: 'label' | 'dimension' | 'detail' | 'drawerDimension') => {
+  if (height < 35) {
+    return false
+  }
+
+  if (role === 'drawerDimension') {
+    return height >= 35
+  }
+
+  if (height < 50) {
+    return role === 'dimension'
+  }
+
+  if (height < 80) {
+    return role === 'label'
+  }
+
+  return true
+}
+
 export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProps) {
   const drawingMaxW = VIEW_W - MARGIN_X * 2
   const drawingMaxH = VIEW_H - MARGIN_TOP - MARGIN_BOTTOM
@@ -63,6 +104,38 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
   const usableStartX = originX + input.leftCpEp * scale
 
   let currentX = usableStartX
+
+  const renderDimensionText = (
+    key: string,
+    x: number,
+    y: number,
+    text: string,
+    role: SvgTextRole = 'dimension',
+    anchor: 'start' | 'middle' | 'end' = 'middle',
+  ) => (
+    <text className={getTextSizeByRole(role)} key={key} x={x} y={y} textAnchor={anchor}>
+      {text}
+    </text>
+  )
+
+  const renderSectionLabel = (
+    label: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    sectionIndex: number,
+  ) => {
+    if (width <= MIN_LABEL_W || !canShowTextByHeight(height, 'label')) {
+      return null
+    }
+
+    const minY = sectionIndex === 0 ? originY + BAY_NUMBER_Y_OFFSET + 24 : y + TEXT_PADDING_TOP
+    const maxY = y + height - TEXT_PADDING_BOTTOM
+    const labelY = Math.min(Math.max(y + height / 2, minY), maxY)
+
+    return renderDimensionText('section-label', x + width / 2, labelY, label, 'sectionLabel')
+  }
 
   const renderDrawerRows = (
     x: number,
@@ -84,11 +157,9 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
           {index < safeCount - 1 ? (
             <line className="section-detail-line" x1={x} y1={lineY} x2={x + width} y2={lineY} />
           ) : null}
-          {rowH > MIN_DIM_H ? (
-            <text className="drawer-dim" x={x + width / 2} y={rowY + rowH / 2}>
-              {drawerHeight}H
-            </text>
-          ) : null}
+          {canShowTextByHeight(rowH, 'drawerDimension')
+            ? renderDimensionText(`drawer-dim-${rowY}`, x + width - TEXT_PADDING_RIGHT, rowY + rowH / 2 + 3, `${drawerHeight}H`, 'dimension', 'end')
+            : null}
         </g>
       )
     })
@@ -191,17 +262,11 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
                                 <line className="section-split-line" x1={currentSplitX} y1={sectionY} x2={currentSplitX} y2={sectionY + sectionH} />
                               ) : null}
                               {renderSectionItem(split.itemType, currentSplitX, sectionY, splitW, sectionH, split.drawerCount, split.shelfCount, section.calculatedH)}
-                              {splitW > MIN_LABEL_W ? (
+                              {splitW > MIN_LABEL_W && canShowTextByHeight(sectionH, 'detail') ? (
                                 <>
-                                  <text className="split-type-label" x={currentSplitX + splitW / 2} y={sectionY + 24}>
-                                    {split.label || getSectionText(split.itemType)}
-                                  </text>
-                                  <text className="split-type-label" x={currentSplitX + splitW / 2} y={sectionY + Math.min(sectionH / 2, sectionH - 18)}>
-                                    {getSectionText(split.itemType)}
-                                  </text>
-                                  <text className="split-width-dim" x={currentSplitX + splitW / 2} y={sectionY + sectionH - 8}>
-                                    {split.calculatedW}W
-                                  </text>
+                                  {renderDimensionText(`split-label-${split.id}`, currentSplitX + splitW / 2, sectionY + TEXT_PADDING_TOP + 8, split.label || getSectionText(split.itemType), 'subDimension')}
+                                  {renderDimensionText(`split-type-${split.id}`, currentSplitX + splitW / 2, sectionY + sectionH / 2 + 4, getSectionText(split.itemType), 'subDimension')}
+                                  {renderDimensionText(`split-w-${split.id}`, currentSplitX + splitW / 2, sectionY + sectionH - TEXT_PADDING_BOTTOM, `${split.calculatedW}W`, 'subDimension')}
                                 </>
                               ) : null}
                             </g>
@@ -211,34 +276,22 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
                     ) : (
                       <>
                         {renderSectionItem(section.itemType, innerX, sectionY, innerW, sectionH, section.drawerCount, section.shelfCount, section.calculatedH)}
-                        {innerW > MIN_LABEL_W ? (
-                          <text className="split-type-label" x={innerX + innerW / 2} y={sectionY + Math.min(sectionH / 2, sectionH - 18)}>
-                            {getSectionText(section.itemType)}
-                          </text>
-                        ) : null}
+                        {innerW > MIN_LABEL_W && canShowTextByHeight(sectionH, 'detail')
+                          ? renderDimensionText(`section-type-${section.id}`, innerX + innerW / 2, sectionY + sectionH / 2 + 4, getSectionText(section.itemType), 'subDimension')
+                          : null}
                       </>
                     )}
-                    <text className="section-label" x={innerX + innerW / 2} y={sectionY + 12}>
-                      {getSectionName(section, sectionIndex, bay.sections.length)}
-                    </text>
-                    {sectionH > MIN_DIM_H ? (
-                      <text className="section-dim" x={innerX + innerW - 8} y={sectionY + sectionH - 8}>
-                        {section.calculatedH}H
-                      </text>
-                    ) : null}
+                    {renderSectionLabel(getSectionName(section, sectionIndex, bay.sections.length), innerX, sectionY, innerW, sectionH, sectionIndex)}
+                    {canShowTextByHeight(sectionH, 'dimension')
+                      ? renderDimensionText(`section-h-${section.id}`, innerX + innerW - TEXT_PADDING_RIGHT, sectionY + sectionH - TEXT_PADDING_BOTTOM, `${section.calculatedH}H`, 'dimension', 'end')
+                      : null}
                   </g>
                 )
               })
             })()}
-            <text className="bay-number" x={bayX + bayW / 2} y={originY + 30}>
-              {bay.id}통
-            </text>
-            <text className="bay-size" x={bayX + bayW / 2} y={originY + caseH + toeH + 34}>
-              {bay.outerW} mm
-            </text>
-            <text className="bay-inner-size" x={bayX + bayW / 2} y={originY + caseH + toeH + 50}>
-              내부W {bay.innerW} mm
-            </text>
+            {renderDimensionText(`bay-number-${bay.id}`, bayX + bayW / 2, originY + BAY_NUMBER_Y_OFFSET, `${bay.id}통`, 'bayNumber')}
+            {renderDimensionText(`bay-size-${bay.id}`, bayX + bayW / 2, originY + caseH + toeH + 34, `${bay.outerW}W`, 'dimension')}
+            {renderDimensionText(`bay-inner-${bay.id}`, bayX + bayW / 2, originY + caseH + toeH + 50, `내부 ${bay.innerW}W`, 'subDimension')}
             <line className="bay-dim" x1={bayX + 8} y1={originY + caseH + toeH + 14} x2={bayX + bayW - 8} y2={originY + caseH + toeH + 14} />
             {bay.heightError ? (
               <text className="svg-error-label" x={bayX + bayW / 2} y={originY + caseH - 12}>

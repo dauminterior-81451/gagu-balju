@@ -480,22 +480,45 @@
   paint-order: stroke;
   stroke: #fbfcfd;
   stroke-linejoin: round;
-  stroke-width: 3px;
+  stroke-width: 2.5px;
+}
+
+.svg-text-bay-number {
+  font-size: 18px;
+  dominant-baseline: middle;
+}
+
+.svg-text-section-label {
+  font-size: 12px;
+  dominant-baseline: middle;
+}
+
+.svg-text-dimension {
+  font-size: 9px;
+  dominant-baseline: middle;
+}
+
+.svg-text-sub-dimension {
+  font-size: 8px;
+  dominant-baseline: middle;
 }
 
 .bay-number {
-  font-size: 20px;
+  font-size: 18px;
   text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .bay-size {
-  font-size: 13px;
+  font-size: 9px;
   text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .bay-inner-size {
-  font-size: 10px;
+  font-size: 8px;
   text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .section-label {
@@ -505,23 +528,25 @@
 }
 
 .split-type-label {
-  font-size: 10px;
+  font-size: 8px;
   text-anchor: middle;
   dominant-baseline: middle;
 }
 
 .split-width-dim {
-  font-size: 10px;
+  font-size: 8px;
   text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .section-dim {
-  font-size: 10px;
+  font-size: 9px;
   text-anchor: end;
+  dominant-baseline: middle;
 }
 
 .drawer-dim {
-  font-size: 10px;
+  font-size: 9px;
   text-anchor: middle;
   dominant-baseline: middle;
 }
