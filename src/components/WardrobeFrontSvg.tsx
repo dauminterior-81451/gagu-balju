@@ -214,6 +214,7 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     shelfCount?: number,
     calculatedH?: number,
     drawerLabel?: string,
+    showRail?: boolean,
   ) => {
     if (itemType === 'drawer') {
       const safeCount = Math.max(Math.floor(drawerCount ?? 3), 1)
@@ -227,9 +228,18 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
     }
 
     if (itemType === 'longHanger' || itemType === 'shortHanger') {
-      const rodY = y + Math.min(height * 0.28, 34)
+      if (!showRail) {
+        return null
+      }
 
-      return <line className="hanger-rod" x1={x + 10} y1={rodY} x2={x + width - 10} y2={rodY} />
+      const rodY = y + Math.min(Math.max(height * 0.24, 24), 42)
+
+      return (
+        <g>
+          <line className="hanger-rod" x1={x + 10} y1={rodY} x2={x + width - 10} y2={rodY} />
+          {height > 80 && width > MIN_LABEL_W ? renderDimensionText(`rail-label-${x}-${y}`, x + width / 2, rodY - 8, '옷봉', 'subDimension') : null}
+        </g>
+      )
     }
 
     return null
@@ -292,7 +302,7 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
                               {splitIndex > 0 ? (
                                 <line className="section-split-line" x1={currentSplitX} y1={sectionY} x2={currentSplitX} y2={sectionY + sectionH} />
                               ) : null}
-                              {renderSectionItem(split.itemType, currentSplitX, sectionY, splitW, sectionH, split.drawerCount, split.shelfCount, section.calculatedH, split.drawerLabel ?? section.drawerLabel ?? '뎀핑언더')}
+                              {renderSectionItem(split.itemType, currentSplitX, sectionY, splitW, sectionH, split.drawerCount, split.shelfCount, section.calculatedH, split.drawerLabel ?? section.drawerLabel ?? '뎀핑언더', split.showRail ?? section.showRail ?? false)}
                               {splitW > MIN_LABEL_W && canShowTextByHeight(sectionH, 'detail') ? (
                                 <>
                                   {renderDimensionText(`split-label-${split.id}`, currentSplitX + splitW / 2, sectionY + TEXT_PADDING_TOP + 8, split.label || getSectionText(split.itemType), 'subDimension')}
@@ -306,7 +316,7 @@ export default function WardrobeFrontSvg({ input, layout }: WardrobeFrontSvgProp
                       })()
                     ) : (
                       <>
-                        {renderSectionItem(section.itemType, innerX, sectionY, innerW, sectionH, section.drawerCount, section.shelfCount, section.calculatedH, section.drawerLabel ?? '뎀핑언더')}
+                        {renderSectionItem(section.itemType, innerX, sectionY, innerW, sectionH, section.drawerCount, section.shelfCount, section.calculatedH, section.drawerLabel ?? '뎀핑언더', section.showRail ?? false)}
                         {innerW > MIN_LABEL_W && canShowTextByHeight(sectionH, 'detail')
                           ? renderDimensionText(`section-type-${section.id}`, innerX + innerW / 2, sectionY + sectionH / 2 + 4, getSectionText(section.itemType), 'subDimension')
                           : null}

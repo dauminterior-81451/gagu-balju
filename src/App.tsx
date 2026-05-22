@@ -24,7 +24,7 @@ type NumberField = {
   step?: number
 }
 
-type StructurePresetKey = 'twoSplit' | 'threeSplit' | 'longDrawer' | 'shortDrawer' | 'open' | 'shelf' | 'bottomSplit'
+type StructurePresetKey = 'twoSplit' | 'threeSplit' | 'shelfRailDrawer' | 'longDrawer' | 'shortDrawer' | 'open' | 'shelf' | 'bottomSplit'
 
 type StructurePreset = {
   key: StructurePresetKey
@@ -82,6 +82,7 @@ const fields: NumberField[] = [
 const structurePresets: StructurePreset[] = [
   { key: 'twoSplit', label: '상하 2분할' },
   { key: 'threeSplit', label: '상중하 3분할' },
+  { key: 'shelfRailDrawer', label: '상부 선반 + 옷봉 + 하부 서랍' },
   { key: 'longDrawer', label: '상단 긴옷 + 하단 서랍' },
   { key: 'shortDrawer', label: '상단 짧은옷 + 하단 서랍 4~5개' },
   { key: 'open', label: '전체 오픈장' },
@@ -113,6 +114,7 @@ const createVerticalSplits = (section: CabinetSection, splitCount: number): Sect
       widthRatio: currentSplit?.widthRatio ?? 1,
       drawerCount: currentSplit?.drawerCount ?? section.drawerCount,
       drawerLabel: currentSplit?.drawerLabel ?? section.drawerLabel ?? '뎀핑언더',
+      showRail: currentSplit?.showRail ?? section.showRail,
       shelfCount: currentSplit?.shelfCount ?? section.shelfCount,
     }
   })
@@ -138,6 +140,14 @@ const createPresetSections = (presetKey: StructurePresetKey): CabinetSection[] =
     return [
       { id: 'long-hanger', label: '긴옷', itemType: 'longHanger' },
       { id: 'drawer', label: '하단 서랍', itemType: 'drawer', drawerCount: 3, drawerLabel: '뎀핑언더' },
+    ]
+  }
+
+  if (presetKey === 'shelfRailDrawer') {
+    return [
+      { id: 'top-shelf', label: '상단 선반', itemType: 'shelf', height: 250, shelfCount: 2 },
+      { id: 'middle-rail', label: '옷봉', itemType: 'shortHanger', height: 860, showRail: true },
+      { id: 'bottom-drawer', label: '하단 서랍', itemType: 'drawer', drawerCount: 3, drawerLabel: '뎀핑언더' },
     ]
   }
 
@@ -249,6 +259,14 @@ export default function App() {
       return
     }
 
+    if (key === 'showRail') {
+      updateSection(sectionIndex, {
+        ...currentSection,
+        showRail: value === 'true',
+      })
+      return
+    }
+
     if (key === 'verticalSplitCount') {
       const splitCount = Math.floor(clampNumber(Number(value), 1, 8))
 
@@ -288,6 +306,13 @@ export default function App() {
         return {
           ...split,
           [key]: Math.floor(clampNumber(Number(value), 1, 8)),
+        }
+      }
+
+      if (key === 'showRail') {
+        return {
+          ...split,
+          showRail: value === 'true',
         }
       }
 
@@ -528,6 +553,17 @@ export default function App() {
                         </label>
                       ) : null}
 
+                      {section.itemType === 'longHanger' || section.itemType === 'shortHanger' ? (
+                        <label className="field checkbox-field">
+                          <input
+                            type="checkbox"
+                            checked={section.showRail ?? false}
+                            onChange={(event) => updateSectionValue(sectionIndex, 'showRail', event.target.checked ? 'true' : 'false')}
+                          />
+                          <span>옷봉 표시</span>
+                        </label>
+                      ) : null}
+
                       {section.splits?.length ? (
                         <div className="split-list">
                           {section.splits.map((split, splitIndex) => (
@@ -577,6 +613,17 @@ export default function App() {
                                     />
                                   </label>
                                 </>
+                              ) : null}
+
+                              {split.itemType === 'longHanger' || split.itemType === 'shortHanger' ? (
+                                <label className="field checkbox-field">
+                                  <input
+                                    type="checkbox"
+                                    checked={split.showRail ?? false}
+                                    onChange={(event) => updateSectionSplitValue(sectionIndex, splitIndex, 'showRail', event.target.checked ? 'true' : 'false')}
+                                  />
+                                  <span>분할 옷봉 표시</span>
+                                </label>
                               ) : null}
                             </div>
                           ))}

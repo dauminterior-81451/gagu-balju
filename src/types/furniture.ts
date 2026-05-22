@@ -20,6 +20,7 @@ export type SectionSplit = {
   widthRatio?: number
   drawerCount?: number
   drawerLabel?: string
+  showRail?: boolean
   shelfCount?: number
 }
 
@@ -32,6 +33,7 @@ export type CabinetSection = {
   verticalSplitCount?: number
   drawerCount?: number
   drawerLabel?: string
+  showRail?: boolean
   shelfCount?: number
   splits?: SectionSplit[]
 }
